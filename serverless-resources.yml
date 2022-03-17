@@ -1,0 +1,33 @@
+Resources:
+  deadletterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:custom.deadletterQueue.name}
+      MessageRetentionPeriod: 1209600
+
+  DeadletterQueue:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: DeadletterQueue
+      AlarmDescription: 'There are failed messages in the deadletterQueue.'
+      Namespace: AWS/SQS
+      MetricName: ApproximateNumberOfMessagesVisible
+      Dimensions:
+        - Name: QueueName
+          Value: ${self:custom.deadletterQueue.name}
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      AlarmActions:
+        - !Ref DlqAlarmEmail
+
+  DlqAlarmEmail:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Endpoint: email1@franq.com.br
+          Protocol: email
+        - Endpoint: email2@franq.com.br
+          Protocol: email

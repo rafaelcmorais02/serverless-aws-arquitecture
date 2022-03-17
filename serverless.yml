@@ -1,0 +1,69 @@
+service: partner-integrations
+
+frameworkVersion: '3'
+
+plugins:
+  - serverless-bundle
+  - serverless-step-functions
+
+custom:
+  region:
+    hml: sa-east-1
+    prod: sa-east-1
+  bundle:
+    linting: false
+    concurrency: 2
+    sourcemaps: true # Enable source maps
+    caching: true # Enable Webpack caching
+
+  deadletterQueue:
+    name: deadletterQueue-${self:provider.stage}
+    arn: !GetAtt deadletterQueue.Arn
+    url: !Ref deadletterQueue
+
+provider:
+  name: aws
+  timeout: 30
+  memorySize: 512
+  runtime: nodejs14.x
+  versionFunctions: false
+  stage: ${opt:stage, 'hml'}
+  region: ${self:custom.region.${self:provider.stage}}
+  apiName: ${self:service}-${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - events:PutEvents
+      Resource: 'arn:aws:events:*:*:*'
+    - Effect: Allow
+
+      Action:
+        - 'states:ListStateMachines'
+        - 'states:StartExecution'
+        - 'states:DescribeExecution'
+      Resource: 'arn:aws:states:*:*:*'
+
+    - Effect: Allow
+      Action:
+        - sqs:ReceiveMessage
+        - sqs:SendMessage
+        - sqs:DeleteMessage
+        - sqs:GetQueueAttributes
+      Resource: 'arn:aws:sqs:*:*:*'
+
+    - Effect: Allow
+      Action:
+        - ssm:GetParameter
+      Resource: 'arn:aws:ssm:*:*:*'
+
+package:
+  individually: true
+
+functions: ${file(serverless-functions.yml):functions}
+resources:
+  Resources: ${file(serverless-resources.yml):Resources}
+
+stepFunctions:
+  validate: true
+  stateMachines:
+    stepFunctionExample: ${file(src/domainExample/stepFunctionExample.yml):stepFunctionExample}

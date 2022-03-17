@@ -1,0 +1,57 @@
+{
+  "name": "partner-integrations",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint  --ignore-path .gitignore .",
+    "lint-updated": "pipe-git-updated --ext=js -- eslint --ignore-path .gitignore",
+    "prettier-check": "prettier -c --ignore-path .gitignore \"**/*.{css,html,js,json,md,yaml,yml}\"",
+    "prettier-check-updated": "pipe-git-updated --ext=css --ext=html --ext=js --ext=json --ext=md --ext=yaml --ext=yml -- prettier -c",
+    "prettify": "prettier --write --ignore-path .gitignore \"**/*.{css,html,js,json,md,yaml,yml}\"",
+    "prettify-updated": "pipe-git-updated --ext=css --ext=html --ext=js --ext=json --ext=md --ext=yaml --ext=yml -- prettier --write",
+    "test": "serverless-bundle test"
+  },
+  "eslintConfig": {
+    "extends": "@serverless/eslint-config/node",
+    "parserOptions": {
+      "sourceType": "module"
+    },
+    "rules": {
+      "import/prefer-default-export": "off",
+      "no-console": "off"
+    },
+    "root": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/franqbackend/partner-integrations.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/franqbackend/partner-integrations#readme",
+  "dependencies": {
+    "@middy/core": "^2.5.7",
+    "@middy/http-error-handler": "^2.5.3",
+    "@middy/http-event-normalizer": "^2.5.3",
+    "@middy/http-json-body-parser": "^2.5.3",
+    "@middy/validator": "^2.5.3",
+    "aws-sdk": "^2.1074.0",
+    "axios": "^0.26.0",
+    "jest": "^27.5.1",
+    "jsonwebtoken": "^8.5.1",
+    "pino": "^7.6.5",
+    "qs": "^6.10.3",
+    "serverless": "^3.7.7",
+    "serverless-bundle": "^5.2.0",
+    "serverless-step-functions": "^3.5.1"
+  },
+  "devDependencies": {
+    "@serverless/eslint-config": "^4.0.0",
+    "eslint": "^8.11.0",
+    "eslint-plugin-import": "^2.25.4",
+    "git-list-updated": "^1.2.1",
+    "prettier": "^2.6.0"
+  }
+}

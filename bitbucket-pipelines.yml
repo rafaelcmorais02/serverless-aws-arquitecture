@@ -1,0 +1,53 @@
+image: node:14-alpine
+
+definitions:
+  steps:
+    - step: &lint
+        name: Code linting
+        caches:
+          - node
+        script:
+          - npm ci
+          - npm run lint && npm run prettier-check
+
+    - step: &test
+        name: Test
+        caches:
+          - node
+        script:
+          - npm ci
+          - npm run test
+
+pipelines:
+  branches:
+    main:
+      - parallel:
+          - step: *lint
+          - step: *test
+      - step:
+          name: Complete deploy to main
+          size: 2x
+          caches:
+            - node
+          script:
+            - npm ci
+            - NODE_OPTIONS="--max-old-space-size=7168" ./node_modules/.bin/serverless deploy --stage prod
+
+  default:
+    - parallel:
+        - step: *lint
+        - step: *test
+
+  custom:
+    homolog-deploy:
+      - parallel:
+          - step: *lint
+          - step: *test
+      - step:
+          name: Complete deploy to homolog
+          size: 2x
+          caches:
+            - node
+          script:
+            - npm ci
+            - NODE_OPTIONS="--max-old-space-size=7168" ./node_modules/.bin/serverless deploy --stage hml

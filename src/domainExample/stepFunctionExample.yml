@@ -1,0 +1,41 @@
+stepFunctionExample:
+  name: stepFunctionExample
+  definition:
+    Comment: Exemplo de step function
+    StartAt: ParallelMaster
+    States:
+      sendErrorToSQS:
+        Type: Task
+        Resource: arn:aws:states:::sqs:sendMessage
+        Parameters:
+          QueueUrl: ${self:custom.deadletterQueue.url}
+          MessageBody.$: $
+        End: true
+      ParallelMaster:
+        Type: Parallel
+        Branches:
+          - StartAt: stateExample
+            States:
+              stateExample:
+                Type: Task
+                Resource: arn:aws:states:::lambda:invoke
+                OutputPath: $.Payload
+                Parameters:
+                  Payload.$: $
+                  FunctionName: >-
+                    arn:aws:lambda:${aws:region}:${aws:accountId}:function:${self:service}-${self:provider.stage}-stepFunctionExample-lambdaExample:$LATEST
+                Retry:
+                  - ErrorEquals:
+                      - Lambda.ServiceException
+                      - Lambda.AWSLambdaException
+                      - Lambda.SdkClientException
+                    IntervalSeconds: 2
+                    MaxAttempts: 6
+                    BackoffRate: 2
+                End: True
+        Catch:
+          - ErrorEquals:
+              - States.ALL
+            Next: sendErrorToSQS
+            ResultPath: $.Payload
+        End: True

@@ -1,0 +1,38 @@
+functions:
+  # Events:
+  event-example:
+    handler: src/publishers/eventExemple/event.handler
+    events:
+      - http:
+          path: example/events
+          method: post
+
+  # flowExample:
+  consumerExample:
+    handler: src/domainExample/consumer.handler
+    events:
+      - eventBridge:
+          pattern:
+            source:
+              - event.test
+          deadLetterQueueArn: ${self:custom.deadletterQueue.arn}
+          retryPolicy:
+            maximumEventAge: 3600
+            maximumRetryAttempts: 3
+
+  consumerDLQExample:
+    handler: src/domainExample/consumerDLQ.handler
+    reservedConcurrency: 1
+    events:
+      - sqs:
+          enabled: false
+          batchSize: 1
+          arn: ${self:custom.deadletterQueue.arn}
+
+  stepFunctionExample-lambdaExample:
+    handler: src/domainExample/steps/lambdaExemple/index.handler
+    # Colocar variáveis de ambientes diretamente na lambda
+
+    # environment:
+    #   SALESFORCE_BASE_URL: ${self:custom.parameters.SALESFORCE_BASE_URL}
+    #   SALESFORCE_API_CREDENTIALS: ${self:custom.parameters.SALESFORCE_API_CREDENTIALS}
